@@ -27,15 +27,21 @@ public class BluetoothConnectInteractService {
     }
 
     private void connectionFailed(String errMsg){
-        delegate.onConnectionFailed(errMsg);
+        if (delegate != null) {
+            delegate.onConnectionFailed(errMsg);
+        }
     }
 
     private void connectionStateChanged(String state){
-        delegate.onConnectionStateChanged(state);
+        if (delegate != null) {
+            delegate.onConnectionStateChanged(state);
+        }
     }
 
     private void connectionLost(){
-        delegate.onConnectionLost();
+        if (delegate != null) {
+            delegate.onConnectionLost();
+        }
         currentState = ConnStates.STATE_NONE;
     }
 
@@ -77,6 +83,8 @@ public class BluetoothConnectInteractService {
     }
 
     synchronized void stop(){
+
+        delegate = null;
         //cancelling any previous connection threads
         if (connectionThread != null){
             connectionThread.cancel();
