@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "505591843272",
+    "firebase_url": "https://neurowheels-9d007.firebaseio.com",
+    "project_id": "neurowheels-9d007",
+    "storage_bucket": "neurowheels-9d007.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:505591843272:android:91a1ad635aa3f238",
+        "android_client_info": {
+          "package_name": "onestopsolns.neurowheels"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "505591843272-ttjqi40g1vvgj7u5orvemimh44ih2omh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "onestopsolns.neurowheels",
+            "certificate_hash": "b58e01b981016dd6e8e8786d097aeb53493c7d93"
+          }
+        },
+        {
+          "client_id": "505591843272-rl810mspgc0ikm1n7jtd25j7h6b5mase.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvvsW5mvVnOBEYAgj915Co-IPom_KdL2U"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "505591843272-rl810mspgc0ikm1n7jtd25j7h6b5mase.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,196 @@
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/purple_gradient"
+    tools:context=".Main">
+
+    <RadioGroup
+        android:id="@+id/radioButtonGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@drawable/radio_background"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Connect To:"
+            android:textSize="20sp"
+            android:textColor="@android:color/white"
+            android:layout_marginStart="16dp"
+            android:layout_marginLeft="16dp"/>
+
+        <android.support.v4.widget.Space
+            android:layout_width="16dp"
+            android:layout_height="0dp" />
+
+        <RadioButton
+            android:id="@+id/radHC05"
+            android:text="HC-05"
+            android:tag="0"
+            android:textColor="@android:color/white"
+            android:checked="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <android.support.v4.widget.Space
+            android:layout_width="16dp"
+            android:layout_height="0dp" />
+
+        <RadioButton
+            android:id="@+id/radHC06"
+            android:text="HC-06"
+            android:tag="1"
+            android:textColor="@android:color/white"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </RadioGroup>
+
+
+    <ImageView
+        android:id="@+id/centerImage"
+        android:layout_width="@dimen/center_image_size"
+        android:layout_height="@dimen/center_image_size"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:src="@drawable/center_basic"/>
+
+    <ImageView
+        android:id="@+id/topDots"
+        android:layout_width="15dp"
+        android:layout_height="0dp"
+        android:src="@drawable/top_dots_inactive"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/centerImage"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintDimensionRatio="1:3"/>
+
+    <ImageView
+        android:id="@+id/bottomDots"
+        android:layout_width="15dp"
+        android:layout_height="0dp"
+        android:src="@drawable/down_dots_inactive"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/centerImage"
+        android:layout_marginTop="8dp"
+        app:layout_constraintDimensionRatio="1:3"/>
+
+    <ImageView
+        android:id="@+id/rightDots"
+        android:layout_width="0dp"
+        android:layout_height="15dp"
+        android:src="@drawable/right_dots_inactive"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@+id/centerImage"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintDimensionRatio="3:1"/>
+
+    <ImageView
+        android:id="@+id/leftDots"
+        android:layout_width="0dp"
+        android:layout_height="15dp"
+        android:src="@drawable/right_dots_inactive"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/centerImage"
+        android:layout_marginRight="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintDimensionRatio="3:1"/>
+
+    <Button
+        android:id="@+id/btnFront"
+        android:layout_width="@dimen/circ_btn_size"
+        android:layout_height="@dimen/circ_btn_size"
+        android:background="@drawable/btn_up_inactive"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/topDots"
+        android:layout_marginBottom="8dp"/>
+
+    <Button
+        android:id="@+id/btnBack"
+        android:layout_width="@dimen/circ_btn_size"
+        android:layout_height="@dimen/circ_btn_size"
+        android:background="@drawable/btn_down_inactive"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bottomDots"
+        android:layout_marginTop="8dp"/>
+
+    <Button
+        android:id="@+id/btnLeft"
+        android:layout_width="@dimen/circ_btn_size"
+        android:layout_height="@dimen/circ_btn_size"
+        android:background="@drawable/btn_left_inactive"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toLeftOf="@+id/leftDots"
+        android:layout_marginRight="8dp"
+        android:layout_marginEnd="8dp"/>
+
+    <Button
+        android:id="@+id/btnRight"
+        android:layout_width="@dimen/circ_btn_size"
+        android:layout_height="@dimen/circ_btn_size"
+        android:background="@drawable/btn_right_inactive"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@+id/rightDots"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"/>
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/errorView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:background="@android:color/holo_red_dark"
+        android:layout_margin="16dp"
+        android:padding="8dp">
+
+        <ImageView
+            android:id="@+id/alertIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:src="@android:drawable/stat_sys_warning"/>
+
+        <TextView
+            android:id="@+id/errMsg"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toRightOf="@+id/alertIcon"
+            app:layout_constraintStart_toEndOf="@+id/alertIcon"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:textColor="@android:color/white"
+            app:layout_constraintHorizontal_bias="0"/>
+
+    </android.support.constraint.ConstraintLayout>
+
+</android.support.constraint.ConstraintLayout>

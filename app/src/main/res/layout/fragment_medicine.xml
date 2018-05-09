@@ -1,0 +1,31 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp"
+    tools:context="onestopsolns.neurowheels.Medicine">
+
+    <Button
+        android:id="@+id/addmedbutton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:clickable="true"
+        android:text="Add Medicine" />
+
+    <!--  <android.support.v7.widget.RecyclerView
+          android:id="@+id/medicinelist"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:layout_below="@id/addmedbutton">
+
+      </android.support.v7.widget.RecyclerView>-->
+
+    <ListView
+        android:id="@+id/medicinelist"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/addmedbutton"></ListView>
+
+
+</RelativeLayout>
