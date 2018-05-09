@@ -11,7 +11,7 @@ import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 
-import onestopsolns.neurowheels.AddAlarm;
+import onestopsolns.neurowheels.fragments.AddAlarm;
 import onestopsolns.neurowheels.R;
 import onestopsolns.neurowheels.data.AlarmReminderContract;
 

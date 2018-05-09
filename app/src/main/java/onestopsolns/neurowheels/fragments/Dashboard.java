@@ -1,6 +1,5 @@
-package onestopsolns.neurowheels;
+package onestopsolns.neurowheels.fragments;
 
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -8,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.constraint.ConstraintLayout;
@@ -27,6 +25,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Set;
+
+import onestopsolns.neurowheels.R;
 
 
 public class Dashboard extends Fragment implements BluetoothConnectInteractServiceDelegate {

@@ -1,4 +1,4 @@
-package onestopsolns.neurowheels;
+package onestopsolns.neurowheels.fragments;
 
 import android.app.Activity;
 import android.content.Context;
@@ -8,6 +8,8 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import onestopsolns.neurowheels.R;
 
 
 public class About extends Fragment {

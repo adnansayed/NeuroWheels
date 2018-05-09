@@ -1,4 +1,4 @@
-package onestopsolns.neurowheels;
+package onestopsolns.neurowheels.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -9,6 +9,9 @@ import android.widget.TextView;
 
 import java.util.Collections;
 import java.util.List;
+
+import onestopsolns.neurowheels.R;
+import onestopsolns.neurowheels.views.NavDrawerItem;
 
 /**
  * Created by Adnan on 24-03-2018.

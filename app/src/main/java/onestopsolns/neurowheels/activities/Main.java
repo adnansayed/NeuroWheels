@@ -1,4 +1,4 @@
-package onestopsolns.neurowheels;
+package onestopsolns.neurowheels.activities;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -8,6 +8,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+
+import onestopsolns.neurowheels.fragments.About;
+import onestopsolns.neurowheels.fragments.Alarm;
+import onestopsolns.neurowheels.fragments.Dashboard;
+import onestopsolns.neurowheels.fragments.FragmentDrawer;
+import onestopsolns.neurowheels.fragments.Medicine;
+import onestopsolns.neurowheels.R;
 
 
 public class Main extends AppCompatActivity implements FragmentDrawer.FragmentDrawerListener {

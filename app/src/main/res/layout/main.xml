@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:id="@+id/drawer_layout"
     android:layout_height="match_parent"
-    tools:context="onestopsolns.neurowheels.Main">
+    tools:context="onestopsolns.neurowheels.activities.Main">
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -28,7 +28,7 @@
 
     <fragment
         android:id="@+id/fragment_navigation_drawer"
-        android:name="onestopsolns.neurowheels.FragmentDrawer"
+        android:name="onestopsolns.neurowheels.fragments.FragmentDrawer"
         android:layout_width="@dimen/nav_drawer_width"
         android:layout_height="match_parent"
         android:layout_gravity="start"

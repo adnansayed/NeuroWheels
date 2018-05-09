@@ -1,4 +1,4 @@
-package onestopsolns.neurowheels;
+package onestopsolns.neurowheels.fragments;
 
 import android.app.AlertDialog;
 import android.app.LoaderManager;
@@ -32,6 +32,7 @@ import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 
 import java.util.Calendar;
 
+import onestopsolns.neurowheels.R;
 import onestopsolns.neurowheels.data.AlarmReminderContract;
 import onestopsolns.neurowheels.reminder.AlarmScheduler;
 

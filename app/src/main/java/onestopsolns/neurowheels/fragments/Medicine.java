@@ -1,4 +1,4 @@
-package onestopsolns.neurowheels;
+package onestopsolns.neurowheels.fragments;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -23,6 +23,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
+import onestopsolns.neurowheels.R;
 import onestopsolns.neurowheels.adapter.MedicineAdapter;
 import onestopsolns.neurowheels.model.MedicineModel;
 

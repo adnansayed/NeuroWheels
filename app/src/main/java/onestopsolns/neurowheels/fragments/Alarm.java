@@ -1,4 +1,4 @@
-package onestopsolns.neurowheels;
+package onestopsolns.neurowheels.fragments;
 
 import android.app.Activity;
 
@@ -24,6 +24,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import onestopsolns.neurowheels.R;
 import onestopsolns.neurowheels.adapter.AlarmAdapter;
 import onestopsolns.neurowheels.data.AlarmReminderContract;
 import onestopsolns.neurowheels.data.AlarmReminderDbHelper;

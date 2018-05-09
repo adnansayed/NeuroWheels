@@ -1,4 +1,4 @@
-package onestopsolns.neurowheels;
+package onestopsolns.neurowheels.views;
 
 /**
  * Created by Adnan on 07-03-2018.

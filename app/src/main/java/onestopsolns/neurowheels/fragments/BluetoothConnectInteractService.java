@@ -1,4 +1,4 @@
-package onestopsolns.neurowheels;
+package onestopsolns.neurowheels.fragments;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;

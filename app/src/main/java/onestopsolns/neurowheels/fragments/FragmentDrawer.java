@@ -1,7 +1,6 @@
-package onestopsolns.neurowheels;
+package onestopsolns.neurowheels.fragments;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
@@ -17,6 +16,10 @@ import android.view.ViewGroup;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import onestopsolns.neurowheels.adapter.NavigationDrawerAdapter;
+import onestopsolns.neurowheels.R;
+import onestopsolns.neurowheels.views.NavDrawerItem;
 
 
 /*
