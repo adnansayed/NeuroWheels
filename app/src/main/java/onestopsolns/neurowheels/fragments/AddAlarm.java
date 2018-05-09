@@ -413,7 +413,7 @@ public class AddAlarm extends AppCompatActivity implements
                 // If the reminder hasn't changed, continue with navigating up to parent activity
                 // which is the {@link MainActivity}.
                 if (!mVehicleHasChanged) {
-                    NavUtils.navigateUpFromSameTask(AddAlarm.this);
+                    onBackPressed();
                     return true;
                 }
 
@@ -425,7 +425,7 @@ public class AddAlarm extends AppCompatActivity implements
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 // User clicked "Discard" button, navigate to parent activity.
-                                NavUtils.navigateUpFromSameTask(AddAlarm.this);
+                                onBackPressed();
                             }
                         };
 

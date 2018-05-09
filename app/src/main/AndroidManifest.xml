@@ -27,6 +27,12 @@
         </activity>
         <activity android:name=".activities.ResetPasswordActivity" />
         <activity android:name=".fragments.AddAlarm"></activity>
+        <provider
+            android:authorities="onestopsolns.neurowheels"
+            android:name=".data.AlarmReminderProvider"
+            android:exported="false"/>
+        <service android:name=".reminder.ReminderAlarmService"
+            android:exported="false"/>
     </application>
 
 </manifest>

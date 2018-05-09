@@ -113,6 +113,7 @@ public class Alarm extends Fragment implements LoaderManager.LoaderCallbacks<Cur
         super.onDetach();
     }
 
+    //Loader Overridden methods
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         String[] projection = {
