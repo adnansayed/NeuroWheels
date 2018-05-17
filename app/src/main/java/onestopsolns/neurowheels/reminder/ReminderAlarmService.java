@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
@@ -71,7 +72,9 @@ public class ReminderAlarmService extends IntentService {
                 .setSmallIcon(R.drawable.ic_add_alert_black_24dp)
                 .setContentIntent(operation)
                 .setAutoCancel(true)
+                .setDefaults(Notification.DEFAULT_SOUND)
                 .build();
+
 
         manager.notify(NOTIFICATION_ID, note);
     }
