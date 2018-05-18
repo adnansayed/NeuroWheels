@@ -1,5 +1,6 @@
 package onestopsolns.neurowheels.activities;
 
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -8,6 +9,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import onestopsolns.neurowheels.fragments.About;
 import onestopsolns.neurowheels.fragments.Alarm;
@@ -21,6 +25,7 @@ public class Main extends AppCompatActivity implements FragmentDrawer.FragmentDr
 
     private Toolbar mToolbar;
     private FragmentDrawer drawerFragment;
+    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +67,10 @@ public class Main extends AppCompatActivity implements FragmentDrawer.FragmentDr
                 break;
             case 3:
                 fragment = new About();
+                break;
+            case 4:
+                mAuth.signOut();
+                startActivity(new Intent(Main.this, LoginActivity.class));
                 break;
             default:
                 break;
