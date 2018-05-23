@@ -31,8 +31,13 @@ public class AlarmReminderDbHelper extends SQLiteOpenHelper {
                 + AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT_TYPE + " TEXT NOT NULL, "
                 + AlarmReminderContract.AlarmReminderEntry.KEY_ACTIVE + " TEXT NOT NULL " + " );";
 
+        String SQL_CREATE_MEDICINE_TABLE =  "CREATE TABLE " + MedicineContract.MedicineEntry.TABLE_NAME + " ("
+                + MedicineContract.MedicineEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + MedicineContract.MedicineEntry.KEY_TITLE + " TEXT NOT NULL " + " );";
+
         // Execute the SQL statement
         sqLiteDatabase.execSQL(SQL_CREATE_ALARM_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_MEDICINE_TABLE);
 
 
     }

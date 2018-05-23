@@ -2,12 +2,19 @@ package onestopsolns.neurowheels.fragments;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
@@ -25,18 +32,20 @@ import java.util.List;
 
 import onestopsolns.neurowheels.R;
 import onestopsolns.neurowheels.adapter.MedicineAdapter;
+import onestopsolns.neurowheels.data.AlarmReminderDbHelper;
+import onestopsolns.neurowheels.data.MedicineContract;
 import onestopsolns.neurowheels.model.MedicineModel;
 
 
-public class Medicine extends Fragment {
-    private Button mInsertMed;
+public class Medicine extends Fragment implements MedicineAdapter.MedicineAdapterListener, LoaderManager.LoaderCallbacks<Cursor> {
+    private FloatingActionButton mInsertMed;
     private View rootView;
     private String mMedicine;
-    SQLiteDatabase mDatabase;
-    public static final String DATABASE_NAME = "mymedicinedatabase";
-    private List<MedicineModel> medicineList;
     private MedicineAdapter adapter;
     private ListView listMedicine;
+    AlarmReminderDbHelper alarmReminderDbHelper = new AlarmReminderDbHelper(getActivity());
+
+    private static final int VEHICLE_LOADER = 0;
 
     public Medicine() {
         // Required empty public constructor
@@ -55,7 +64,11 @@ public class Medicine extends Fragment {
         rootView = inflater.inflate(R.layout.fragment_medicine, container, false);
         mInsertMed = rootView.findViewById(R.id.addmedbutton);
         listMedicine = rootView.findViewById(R.id.medicinelist);
-        medicineList = new ArrayList<>();
+
+        LoaderManager loaderManager=getLoaderManager();
+        adapter = new MedicineAdapter(getContext(),null, this);
+        listMedicine.setAdapter(adapter);
+
         mInsertMed.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -75,10 +88,23 @@ public class Medicine extends Fragment {
                             Toast.makeText(getContext(), "Please Enter The Medicine Name!", Toast.LENGTH_LONG).show();
                         } else {
                             mMedicine = mMedName.getText().toString();
-                            addMedicine(mMedicine);
-                            adapter.clear();
+                            ContentValues values = new ContentValues();
+                            values.put(MedicineContract.MedicineEntry.KEY_TITLE, mMedicine);
+                            Uri newUri = Medicine.this.getActivity().getContentResolver().insert(MedicineContract.MedicineEntry.CONTENT_URI, values);
+
+                            // Show a toast message depending on whether or not the insertion was successful.
+                            if (newUri == null) {
+                                // If the new content URI is null, then there was an error with insertion.
+                                Toast.makeText(Medicine.this.getContext(), "Error in adding medicine",
+                                        Toast.LENGTH_SHORT).show();
+                            } else {
+                                // Otherwise, the insertion was successful and we can display a toast.
+                                Toast.makeText(Medicine.this.getContext(), "Medicine added",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+
                             adapter.notifyDataSetChanged();
-                            showMedicineFromDatabase();
+
                             dialog.dismiss();
                         }
                     }
@@ -94,77 +120,114 @@ public class Medicine extends Fragment {
             }
         });
 
+        loaderManager.initLoader(VEHICLE_LOADER,null,this);
 
-        mDatabase = getActivity().openOrCreateDatabase(DATABASE_NAME, Context.MODE_PRIVATE, null);
-        createMedicineTable();
-
-        showMedicineFromDatabase();
         return rootView;
     }
 
-    private void createMedicineTable() {
-        mDatabase.execSQL(
-                "CREATE TABLE IF NOT EXISTS medicine (\n" +
-                        "    id INTEGER NOT NULL CONSTRAINT medicine_pk PRIMARY KEY AUTOINCREMENT,\n" +
-                        "    name varchar(200) NOT NULL\n" +
-                        ");"
-        );
-    }
-
-    private void addMedicine(String name) {
-
-        String insertSQL = "INSERT INTO medicine \n" +
-                "(name)\n" +
-                "VALUES \n" +
-                "(?);";
-
-        //using the same method execsql for inserting values
-        //this time it has two parameters
-        //first is the sql string and second is the parameters that is to be binded with the query
-        try {
-            mDatabase.execSQL(insertSQL, new String[]{name});
-        } catch (Exception ex) {
-            Log.d("mytag", ex.toString());
-        }
-
-        Toast.makeText(getActivity(), "Medicine Added Successfully", Toast.LENGTH_SHORT).show();
-    }
-
-
-    private void showMedicineFromDatabase() {
-
-        //we used rawQuery(sql, selectionargs) for fetching all the employees
-        Cursor cursorMedicine = mDatabase.rawQuery("SELECT * FROM medicine", null);
-
-        //if the cursor has some data
-        if (cursorMedicine.moveToFirst()) {
-            //looping through all the records
-            do {
-                //pushing each record in the employee list
-                medicineList.add(new MedicineModel(
-                        cursorMedicine.getInt(0),
-                        cursorMedicine.getString(1)
-                ));
-            } while (cursorMedicine.moveToNext());
-        }
-        //closing the cursor
-        cursorMedicine.close();
-
-        //creating the adapter object
-        adapter = new MedicineAdapter(getActivity(), R.layout.list_medicine_layout, medicineList, mDatabase);
-
-        //adding the adapter to listview
-        listMedicine.setAdapter(adapter);
-    }
-
-
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onUpdateTapped(final int medID, String medName) {
+        final android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(this.getContext());
+
+        LayoutInflater inflater = LayoutInflater.from(this.getContext());
+        View view = inflater.inflate(R.layout.update_med_dialog, null);
+        builder.setView(view);
+
+
+        final EditText editTextName = view.findViewById(R.id.updatemedname);
+
+        editTextName.setText(medName);
+
+        final android.support.v7.app.AlertDialog dialog = builder.create();
+        dialog.show();
+
+        view.findViewById(R.id.updatemed).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String name = editTextName.getText().toString().trim();
+
+                if (name.isEmpty()) {
+                    editTextName.setError("Name can't be blank");
+                    editTextName.requestFocus();
+                    return;
+                }
+
+                ContentValues values = new ContentValues();
+                values.put(MedicineContract.MedicineEntry.KEY_TITLE, name);
+
+                Uri uri = ContentUris.withAppendedId(MedicineContract.MedicineEntry.CONTENT_URI, medID);
+
+                int rowsAffected = Medicine.this.getActivity().getContentResolver().update(uri, values, null, null);
+
+                if (rowsAffected == 0) {
+                    // If no rows were affected, then there was an error with the update.
+                    Toast.makeText(Medicine.this.getContext(), "Update Failed",
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    // Otherwise, the update was successful and we can display a toast.
+                    Toast.makeText(Medicine.this.getContext(), "Update Successfull",
+                            Toast.LENGTH_SHORT).show();
+                }
+                dialog.dismiss();
+                adapter.notifyDataSetChanged();
+            }
+        });
     }
 
     @Override
-    public void onDetach() {
-        super.onDetach();
+    public void onDeleteTapped(final int medID) {
+        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(this.getContext());
+        builder.setTitle("Are you sure?");
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Uri uri = ContentUris.withAppendedId(MedicineContract.MedicineEntry.CONTENT_URI, medID);
+                int rowsDeleted = Medicine.this.getActivity().getContentResolver().delete(uri, null, null);
+                if (rowsDeleted == 0) {
+                    // If no rows were deleted, then there was an error with the delete.
+                    Toast.makeText(Medicine.this.getContext(), "Delete Failed",
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    // Otherwise, the delete was successful and we can display a toast.
+                    Toast.makeText(Medicine.this.getContext(), "Deleted successfully",
+                            Toast.LENGTH_SHORT).show();
+                }
+
+                dialogInterface.dismiss();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        android.support.v7.app.AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        String[] projection = {
+                MedicineContract.MedicineEntry._ID,
+                MedicineContract.MedicineEntry.KEY_TITLE,
+        };
+
+        return new CursorLoader(getActivity(),   // Parent activity context
+                MedicineContract.MedicineEntry.CONTENT_URI,   // Provider content URI to query
+                projection,             // Columns to include in the resulting Cursor
+                null,                   // No selection clause
+                null,                   // No selection arguments
+                null);                  // Default sort order
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        adapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        adapter.swapCursor(null);
     }
 }

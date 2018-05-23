@@ -8,4 +8,7 @@
 
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="logo_w_h">100dp</dimen>
+
+    <dimen name="activity_usual_margins">16dp</dimen>
+    <dimen name="small_margin">8dp</dimen>
 </resources>
