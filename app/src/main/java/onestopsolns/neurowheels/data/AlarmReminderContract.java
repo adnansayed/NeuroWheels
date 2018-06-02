@@ -30,6 +30,8 @@ public class AlarmReminderContract {
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_VEHICLE;
 
         public final static String TABLE_NAME = "vehicles";
+        public final static String DELETE_TRIGGER_NAME = "reminderdelete";
+        public final static String INSERT_TRIGGER_NAME = "reminderinsert";
 
         public final static String _ID = BaseColumns._ID;
 

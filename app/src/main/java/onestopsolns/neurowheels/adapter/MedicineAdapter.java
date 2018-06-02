@@ -1,29 +1,16 @@
 package onestopsolns.neurowheels.adapter;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CursorAdapter;
-import android.widget.EditText;
-import android.widget.QuickContactBadge;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import java.util.List;
-
 
 import onestopsolns.neurowheels.R;
 import onestopsolns.neurowheels.data.MedicineContract;
-import onestopsolns.neurowheels.model.MedicineModel;
 
 /**
  * Created by Adnan on 17-04-2018.

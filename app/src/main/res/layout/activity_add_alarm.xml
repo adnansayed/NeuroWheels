@@ -18,7 +18,6 @@
         app:contentInsetStart="16dp"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
-
     <LinearLayout
         android:id="@+id/reminder_layout_top"
         android:layout_width="match_parent"
@@ -28,20 +27,19 @@
         android:orientation="vertical"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-        <EditText
-            android:id="@+id/reminder_title"
+        <ListView
+            android:id="@+id/reminderMedList"
             android:layout_width="match_parent"
-            android:layout_height="140dp"
+            android:layout_height="115dp"
             android:layout_marginLeft="72dp"
-            android:layout_marginRight="16dp"
-            android:gravity="top|left"
-            android:hint="Add Medicine"
-            android:inputType="textCapWords|textMultiLine"
-            android:lines="4"
-            android:minLines="4"
-            android:scrollHorizontally="false"
-            android:textColor="@android:color/white"
-            android:textSize="25dp" />
+            android:layout_marginRight="16dp"/>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/addMedFAB"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:src="@drawable/ic_add_circle_outline_black_24dp"
+            android:layout_gravity="end"/>
 
     </LinearLayout>
 

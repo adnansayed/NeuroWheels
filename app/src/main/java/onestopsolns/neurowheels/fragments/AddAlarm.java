@@ -2,6 +2,7 @@ package onestopsolns.neurowheels.fragments;
 
 import android.app.AlertDialog;
 import android.app.LoaderManager;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
@@ -9,19 +10,24 @@ import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.NavUtils;
+import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.text.Editable;
 import android.text.InputType;
-import android.text.TextWatcher;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
+import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,38 +36,52 @@ import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 import com.wdullaer.materialdatetimepicker.time.RadialPickerLayout;
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
 
 import onestopsolns.neurowheels.R;
+import onestopsolns.neurowheels.adapter.ReminderMedicineAdapter;
 import onestopsolns.neurowheels.data.AlarmReminderContract;
+import onestopsolns.neurowheels.data.MedicineContract;
+import onestopsolns.neurowheels.data.ReminderMedicineContract;
 import onestopsolns.neurowheels.reminder.AlarmScheduler;
 
 public class AddAlarm extends AppCompatActivity implements
         TimePickerDialog.OnTimeSetListener,
-        DatePickerDialog.OnDateSetListener, LoaderManager.LoaderCallbacks<Cursor> {
+        DatePickerDialog.OnDateSetListener,
+        ReminderMedicineAdapter.ReminderMedicineAdapterListener{
 
     private static final int EXISTING_VEHICLE_LOADER = 0;
+    private static final int REM_MED_LOADER = 202;
 
 
     private Toolbar mToolbar;
-    private EditText mTitleText;
     private TextView mDateText, mTimeText, mRepeatText, mRepeatNoText, mRepeatTypeText;
     private FloatingActionButton mFAB1;
     private FloatingActionButton mFAB2;
+    private FloatingActionButton addMedFAB;
+    private ListView medListView;
     private Calendar mCalendar;
     private int mYear, mMonth, mHour, mMinute, mDay;
     private long mRepeatTime;
     private Switch mRepeatSwitch;
-    private String mTitle;
     private String mTime;
     private String mDate;
     private String mRepeat;
     private String mRepeatNo;
     private String mRepeatType;
     private String mActive;
-
+    private Set<Integer> ignoreList = new HashSet<Integer>();
     private Uri mCurrentReminderUri;
     private boolean mVehicleHasChanged = false;
+    private ReminderMedicineAdapter remMedAdapter;
+    private boolean isInitialRemMedLoad = true;
 
     // Values for orientation change
     private static final String KEY_TITLE = "title_key";
@@ -88,6 +108,133 @@ public class AddAlarm extends AppCompatActivity implements
         }
     };
 
+    private LoaderManager.LoaderCallbacks<Cursor> alarmRemLoaderCallback = new LoaderManager.LoaderCallbacks<Cursor>() {
+        @Override
+        public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+            String[] projection = {
+                    AlarmReminderContract.AlarmReminderEntry._ID,
+                    AlarmReminderContract.AlarmReminderEntry.KEY_TITLE,
+                    AlarmReminderContract.AlarmReminderEntry.KEY_DATE,
+                    AlarmReminderContract.AlarmReminderEntry.KEY_TIME,
+                    AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT,
+                    AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT_NO,
+                    AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT_TYPE,
+                    AlarmReminderContract.AlarmReminderEntry.KEY_ACTIVE,
+            };
+
+            // This loader will execute the ContentProvider's query method on a background thread
+            return new CursorLoader(AddAlarm.this,   // Parent activity context
+                    mCurrentReminderUri,         // Query the content URI for the current reminder
+                    projection,             // Columns to include in the resulting Cursor
+                    null,                   // No selection clause
+                    null,                   // No selection arguments
+                    null);                  // Default sort order
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+            if (cursor == null || cursor.getCount() < 1) {
+                return;
+            }
+
+            // Proceed with moving to the first row of the cursor and reading data from it
+            // (This should be the only row in the cursor)
+            if (cursor.moveToFirst()) {
+                int titleColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_TITLE);
+                int dateColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_DATE);
+                int timeColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_TIME);
+                int repeatColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT);
+                int repeatNoColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT_NO);
+                int repeatTypeColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT_TYPE);
+                int activeColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_ACTIVE);
+
+                // Extract out the value from the Cursor for the given column index
+                String title = cursor.getString(titleColumnIndex);
+                String date = cursor.getString(dateColumnIndex);
+                String time = cursor.getString(timeColumnIndex);
+                String repeat = cursor.getString(repeatColumnIndex);
+                String repeatNo = cursor.getString(repeatNoColumnIndex);
+                String repeatType = cursor.getString(repeatTypeColumnIndex);
+                String active = cursor.getString(activeColumnIndex);
+
+
+
+                mDateText.setText(date);
+                mTimeText.setText(time);
+                mRepeatNoText.setText(repeatNo);
+                mRepeatTypeText.setText(repeatType);
+                mRepeatText.setText("Every " + repeatNo + " " + repeatType + "(s)");
+                // Setup up active buttons
+                // Setup repeat switch
+                if (repeat.equals("false")) {
+                    mRepeatSwitch.setChecked(false);
+                    mRepeatText.setText(R.string.repeat_off);
+
+                } else if (repeat.equals("true")) {
+                    mRepeatSwitch.setChecked(true);
+                }
+
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+
+        }
+    };
+
+    private LoaderManager.LoaderCallbacks<Cursor> remMedLoaderCallback = new LoaderManager.LoaderCallbacks<Cursor>() {
+        @Override
+        public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+            String[] projection = {
+                    ReminderMedicineContract.ReminderMedicineEntry._ID,
+                    MedicineContract.MedicineEntry.KEY_TITLE,
+                    ReminderMedicineContract.ReminderMedicineEntry.KEY_QUANTITY
+            };
+
+            // This loader will execute the ContentProvider's query method on a background thread
+            if (mCurrentReminderUri == null){
+                return new CursorLoader(AddAlarm.this,   // Parent activity context
+                        ReminderMedicineContract.ReminderMedicineEntry.CONTENT_URI_JOIN_NULL,
+                        projection,             // Columns to include in the resulting Cursor
+                        null,                   // No selection clause
+                        null,                   // No selection arguments
+                        null);                  // Default sort order
+            }
+            else{
+                Uri remRelatedURI = ContentUris.withAppendedId(ReminderMedicineContract.ReminderMedicineEntry.CONTENT_URI_JOIN, (int)ContentUris.parseId(mCurrentReminderUri));
+                return new CursorLoader(AddAlarm.this,   // Parent activity context
+                        remRelatedURI,
+                        projection,             // Columns to include in the resulting Cursor
+                        null,                   // No selection clause
+                        null,                   // No selection arguments
+                        null);                  // Default sort order
+            }
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+            if(remMedAdapter != null){
+                remMedAdapter.swapCursor(cursor);
+                int fkMedIDPos = cursor.getColumnIndex(ReminderMedicineContract.ReminderMedicineEntry.KEY_FK_MEDICINE_ID);
+                if(isInitialRemMedLoad){
+                    isInitialRemMedLoad =false;
+                    for (int i= 0; i< remMedAdapter.getCount();i++){
+                        if(remMedAdapter.getItem(i) instanceof Cursor){
+                            ignoreList.add(((Cursor)remMedAdapter.getItem(i)).getInt(fkMedIDPos));
+                        }
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+            if(remMedAdapter != null){
+                remMedAdapter.swapCursor(null);
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,13 +256,14 @@ public class AddAlarm extends AppCompatActivity implements
             setTitle(getString(R.string.editor_activity_title_edit_reminder));
 
 
-            getLoaderManager().initLoader(EXISTING_VEHICLE_LOADER, null, this);
+            getLoaderManager().initLoader(EXISTING_VEHICLE_LOADER, null, alarmRemLoaderCallback);
         }
+
+
 
 
         // Initialize Views
         mToolbar = (Toolbar) findViewById(R.id.al_toolbar);
-        mTitleText = (EditText) findViewById(R.id.reminder_title);
         mDateText = (TextView) findViewById(R.id.set_date);
         mTimeText = (TextView) findViewById(R.id.set_time);
         mRepeatText = (TextView) findViewById(R.id.set_repeat);
@@ -124,6 +272,14 @@ public class AddAlarm extends AppCompatActivity implements
         mRepeatSwitch = (Switch) findViewById(R.id.repeat_switch);
         mFAB1 = (FloatingActionButton) findViewById(R.id.starred1);
         mFAB2 = (FloatingActionButton) findViewById(R.id.starred2);
+        addMedFAB = (FloatingActionButton) findViewById(R.id.addMedFAB);
+        medListView = (ListView) findViewById(R.id.reminderMedList);
+
+
+        remMedAdapter = new ReminderMedicineAdapter(this,null,this);
+        medListView.setAdapter(remMedAdapter);
+        getLoaderManager().initLoader(REM_MED_LOADER,null, remMedLoaderCallback);
+
 
         // Initialize default values
         mActive = "true";
@@ -141,23 +297,115 @@ public class AddAlarm extends AppCompatActivity implements
         mDate = mDay + "/" + mMonth + "/" + mYear;
         mTime = mHour + ":" + mMinute;
 
-        // Setup Reminder Title EditText
-        mTitleText.addTextChangedListener(new TextWatcher() {
+//        region addMedFAB
 
+        addMedFAB.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
+            public void onClick(View view) {
+                AlertDialog.Builder mBuilder = new AlertDialog.Builder(AddAlarm.this);
+                View mView = getLayoutInflater().inflate(R.layout.medicine_quantity_dialog,null);
+                final TextInputEditText mMedQty = mView.findViewById(R.id.editTextQuantity);
+                final Spinner medSpinner = mView.findViewById(R.id.spinnerMedName);
+                Button mAdd = mView.findViewById(R.id.medQtyBtnAdd);
+                Button mCancel = mView.findViewById(R.id.medQtyBtnCancel);
+                mBuilder.setView(mView);
+                final AlertDialog dialog = mBuilder.create();
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                mTitle = s.toString().trim();
-                mTitleText.setError(null);
-            }
 
-            @Override
-            public void afterTextChanged(Editable s) {
+                LoaderManager.LoaderCallbacks<Cursor> medSpinnerCursorCallback = new LoaderManager.LoaderCallbacks<Cursor>() {
+                    @Override
+                    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+                        String[] projection = {
+                                MedicineContract.MedicineEntry._ID,
+                                MedicineContract.MedicineEntry.KEY_TITLE,
+                        };
+
+
+                        StringBuilder selectionArguments = new StringBuilder();
+                        for (int element: ignoreList) {
+                            if (selectionArguments.toString().isEmpty()){
+                                selectionArguments.append(String.valueOf(element));
+                            }
+                            else{
+                                selectionArguments.append(",").append(String.valueOf(element));
+                            }
+                        }
+                        String selection = MedicineContract.MedicineEntry._ID + " NOT IN (" + selectionArguments.toString() + ")";
+
+                        if (ignoreList.isEmpty()) {
+                            return new CursorLoader(AddAlarm.this.getBaseContext(), MedicineContract.MedicineEntry.CONTENT_URI, projection, null, null, null);
+                        }
+                        else{
+                            return new CursorLoader(AddAlarm.this.getBaseContext(), MedicineContract.MedicineEntry.CONTENT_URI, projection, selection,null , null);
+                        }
+                    }
+
+                    @Override
+                    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+                        SimpleCursorAdapter adapter = new SimpleCursorAdapter(AddAlarm.this.getBaseContext(), android.R.layout.simple_spinner_item, cursor, new String[]{MedicineContract.MedicineEntry.KEY_TITLE},new int[]{android.R.id.text1}, 0);
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        medSpinner.setAdapter(adapter);
+                    }
+
+                    @Override
+                    public void onLoaderReset(Loader<Cursor> loader) {
+                        medSpinner.setAdapter(null);
+                    }
+                };
+
+                final LoaderManager loaderManager = AddAlarm.this.getLoaderManager();
+                loaderManager.initLoader(101,null,medSpinnerCursorCallback);
+
+                mAdd.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (TextUtils.isEmpty(mMedQty.getText().toString())) {
+                            Toast.makeText(AddAlarm.this.getBaseContext(), "Please Enter The Quantity!", Toast.LENGTH_SHORT).show();
+                        }
+                        else if (Integer.parseInt(mMedQty.getText().toString()) == 0){
+                            Toast.makeText(AddAlarm.this.getBaseContext(), "Please enter a non zero quantity!", Toast.LENGTH_SHORT).show();
+                        }
+                        else {
+                            if (medSpinner.getSelectedItem() != null && medSpinner.getSelectedItem() instanceof Cursor){
+                                ContentValues values = new ContentValues();
+                                values.put(ReminderMedicineContract.ReminderMedicineEntry.KEY_FK_MEDICINE_ID,((Cursor) medSpinner.getSelectedItem()).getInt(0));
+                                values.put(ReminderMedicineContract.ReminderMedicineEntry.KEY_QUANTITY, Integer.parseInt(mMedQty.getText().toString()));
+                                if (mCurrentReminderUri != null){
+                                    values.put(ReminderMedicineContract.ReminderMedicineEntry.KEY_FK_REMINDER_ID,(int)ContentUris.parseId(mCurrentReminderUri));
+                                }
+                                Uri uri = AddAlarm.this.getContentResolver().insert(ReminderMedicineContract.ReminderMedicineEntry.CONTENT_URI,values);
+                                if (uri != null){
+                                    ignoreList.add(((Cursor) medSpinner.getSelectedItem()).getInt(0));
+                                    loaderManager.destroyLoader(101);
+                                    getLoaderManager().destroyLoader(REM_MED_LOADER);
+                                    getLoaderManager().initLoader(REM_MED_LOADER,null, remMedLoaderCallback);
+                                    dialog.dismiss();
+                                }
+                            }
+                            else{
+                                if (medSpinner.getAdapter().getCount() <= 0){
+                                    Toast.makeText(AddAlarm.this,"Select an item",Toast.LENGTH_SHORT).show();
+                                }
+                                else{
+                                    Toast.makeText(AddAlarm.this,"No medicines present add some first",Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        }
+                    }
+                });
+
+                mCancel.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        loaderManager.destroyLoader(101);
+                        dialog.dismiss();
+                    }
+                });
+                dialog.show();
             }
         });
+
+//        endregion
 
         // Setup TextViews using reminder values
         mDateText.setText(mDate);
@@ -168,10 +416,6 @@ public class AddAlarm extends AppCompatActivity implements
 
         // To save state on device rotation
         if (savedInstanceState != null) {
-            String savedTitle = savedInstanceState.getString(KEY_TITLE);
-            mTitleText.setText(savedTitle);
-            mTitle = savedTitle;
-
             String savedTime = savedInstanceState.getString(KEY_TIME);
             mTimeText.setText(savedTime);
             mTime = savedTime;
@@ -215,7 +459,6 @@ public class AddAlarm extends AppCompatActivity implements
     protected void onSaveInstanceState (Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putCharSequence(KEY_TITLE, mTitleText.getText());
         outState.putCharSequence(KEY_TIME, mTimeText.getText());
         outState.putCharSequence(KEY_DATE, mDateText.getText());
         outState.putCharSequence(KEY_REPEAT, mRepeatText.getText());
@@ -393,12 +636,7 @@ public class AddAlarm extends AppCompatActivity implements
             // Respond to a click on the "Save" menu option
             case R.id.save_reminder:
 
-
-                if (mTitleText.getText().toString().length() == 0){
-                    mTitleText.setError("Reminder Title cannot be blank!");
-                }
-
-                else {
+                if(remMedAdapter.getCount() != 0) {
                     saveReminder();
                     finish();
                 }
@@ -493,6 +731,10 @@ public class AddAlarm extends AppCompatActivity implements
             // content URI already identifies the reminder that we want.
             int rowsDeleted = getContentResolver().delete(mCurrentReminderUri, null, null);
 
+            Uri delFKRemID = ContentUris.withAppendedId(ReminderMedicineContract.ReminderMedicineEntry.CONTENT_URI_DELETE_FK_REMID, ContentUris.parseId(mCurrentReminderUri));
+            int rowsFKRemIDDeleted= getContentResolver().delete(delFKRemID, null, null);
+            Log.d("deleted remID rows", String.valueOf(rowsFKRemIDDeleted));
+
             // Show a toast message depending on whether or not the delete was successful.
             if (rowsDeleted == 0) {
                 // If no rows were deleted, then there was an error with the delete.
@@ -518,10 +760,14 @@ public class AddAlarm extends AppCompatActivity implements
             return;
         }
 */
-
         ContentValues values = new ContentValues();
+        SimpleDateFormat dateFormatter = new SimpleDateFormat();
+        dateFormatter.applyPattern("dd-MMM-YYYY, HH:ss");
 
-        values.put(AlarmReminderContract.AlarmReminderEntry.KEY_TITLE, mTitle);
+        StringBuilder reminderName = new StringBuilder();
+        reminderName.append("Reminder ").append(dateFormatter.format(new Date()));
+
+        values.put(AlarmReminderContract.AlarmReminderEntry.KEY_TITLE, reminderName.toString());
         values.put(AlarmReminderContract.AlarmReminderEntry.KEY_DATE, mDate);
         values.put(AlarmReminderContract.AlarmReminderEntry.KEY_TIME, mTime);
         values.put(AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT, mRepeat);
@@ -565,8 +811,21 @@ public class AddAlarm extends AppCompatActivity implements
                         Toast.LENGTH_SHORT).show();
             } else {
                 // Otherwise, the insertion was successful and we can display a toast.
+
+                try {
+                    ContentValues values1 = new ContentValues();
+                    values1.put(ReminderMedicineContract.ReminderMedicineEntry.KEY_FK_REMINDER_ID, (int) ContentUris.parseId(newUri));
+                    int retRows = getContentResolver().update(ReminderMedicineContract.ReminderMedicineEntry.CONTENT_URI_NULL_ID, values1, null, null);
+
+                    Log.d("updates", "remmed rows updated:" + String.valueOf(retRows));
+                }
+                catch (Exception e1){
+                    e1.printStackTrace();
+                }
+
                 Toast.makeText(this, getString(R.string.editor_insert_reminder_successful),
                         Toast.LENGTH_SHORT).show();
+                mCurrentReminderUri = newUri;
             }
         } else {
 
@@ -605,88 +864,74 @@ public class AddAlarm extends AppCompatActivity implements
     // On pressing the back button
     @Override
     public void onBackPressed() {
+        if(mCurrentReminderUri == null){
+            int rows = getContentResolver().delete(ReminderMedicineContract.ReminderMedicineEntry.CONTENT_URI_DELETE_NULL,null,null);
+            Log.d("null rows deleted", String.valueOf(rows));
+        }
         super.onBackPressed();
-
-    }
-
-
-
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-
-        String[] projection = {
-                AlarmReminderContract.AlarmReminderEntry._ID,
-                AlarmReminderContract.AlarmReminderEntry.KEY_TITLE,
-                AlarmReminderContract.AlarmReminderEntry.KEY_DATE,
-                AlarmReminderContract.AlarmReminderEntry.KEY_TIME,
-                AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT,
-                AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT_NO,
-                AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT_TYPE,
-                AlarmReminderContract.AlarmReminderEntry.KEY_ACTIVE,
-        };
-
-        // This loader will execute the ContentProvider's query method on a background thread
-        return new CursorLoader(this,   // Parent activity context
-                mCurrentReminderUri,         // Query the content URI for the current reminder
-                projection,             // Columns to include in the resulting Cursor
-                null,                   // No selection clause
-                null,                   // No selection arguments
-                null);                  // Default sort order
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        if (cursor == null || cursor.getCount() < 1) {
-            return;
-        }
+    public void onItemClicked(final int remMedID, String medName, int medQty) {
+        AlertDialog.Builder mBuilder = new AlertDialog.Builder(AddAlarm.this);
+        View mView = getLayoutInflater().inflate(R.layout.medicine_quantity_dialog,null);
+        final TextInputEditText mMedQty = mView.findViewById(R.id.editTextQuantity);
+        final Spinner medSpinner = mView.findViewById(R.id.spinnerMedName);
+        TextView medNameTextView = mView.findViewById(R.id.textViewMedName);
+        Button mAdd = mView.findViewById(R.id.medQtyBtnAdd);
+        Button mCancel = mView.findViewById(R.id.medQtyBtnCancel);
+        mBuilder.setView(mView);
+        final AlertDialog dialog = mBuilder.create();
 
-        // Proceed with moving to the first row of the cursor and reading data from it
-        // (This should be the only row in the cursor)
-        if (cursor.moveToFirst()) {
-            int titleColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_TITLE);
-            int dateColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_DATE);
-            int timeColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_TIME);
-            int repeatColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT);
-            int repeatNoColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT_NO);
-            int repeatTypeColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_REPEAT_TYPE);
-            int activeColumnIndex = cursor.getColumnIndex(AlarmReminderContract.AlarmReminderEntry.KEY_ACTIVE);
+        medSpinner.setVisibility(View.GONE);
+        medNameTextView.setVisibility(View.VISIBLE);
 
-            // Extract out the value from the Cursor for the given column index
-            String title = cursor.getString(titleColumnIndex);
-            String date = cursor.getString(dateColumnIndex);
-            String time = cursor.getString(timeColumnIndex);
-            String repeat = cursor.getString(repeatColumnIndex);
-            String repeatNo = cursor.getString(repeatNoColumnIndex);
-            String repeatType = cursor.getString(repeatTypeColumnIndex);
-            String active = cursor.getString(activeColumnIndex);
+        medNameTextView.setText(medName);
+        mMedQty.setText(String.valueOf(medQty));
 
-
-
-            // Update the views on the screen with the values from the database
-            mTitleText.setText(title);
-            mDateText.setText(date);
-            mTimeText.setText(time);
-            mRepeatNoText.setText(repeatNo);
-            mRepeatTypeText.setText(repeatType);
-            mRepeatText.setText("Every " + repeatNo + " " + repeatType + "(s)");
-            // Setup up active buttons
-            // Setup repeat switch
-            if (repeat.equals("false")) {
-                mRepeatSwitch.setChecked(false);
-                mRepeatText.setText(R.string.repeat_off);
-
-            } else if (repeat.equals("true")) {
-                mRepeatSwitch.setChecked(true);
+        mAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (TextUtils.isEmpty(mMedQty.getText().toString())) {
+                    Toast.makeText(AddAlarm.this.getBaseContext(), "Please Enter The Quantity!", Toast.LENGTH_SHORT).show();
+                }
+                else if (Integer.parseInt(mMedQty.getText().toString()) == 0){
+                    Toast.makeText(AddAlarm.this.getBaseContext(), "Please enter a non zero quantity!", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    ContentValues values = new ContentValues();
+                    values.put(ReminderMedicineContract.ReminderMedicineEntry.KEY_QUANTITY, Integer.parseInt(mMedQty.getText().toString()));
+                    int rowsUpdated = getContentResolver().update(ContentUris.withAppendedId(ReminderMedicineContract.ReminderMedicineEntry.CONTENT_URI,remMedID),values,null,null);
+                    Log.d("RemMedRows updated", String.valueOf(rowsUpdated));
+                    getLoaderManager().destroyLoader(REM_MED_LOADER);
+                    getLoaderManager().initLoader(REM_MED_LOADER,null, remMedLoaderCallback);
+                    dialog.dismiss();
+                }
             }
+        });
 
-        }
-
-
+        mCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-
+    public void onItemDeleteTapped(final int remMedID, int remFKMedID) {
+        int rowsDeleted = getContentResolver().delete(ContentUris.withAppendedId(ReminderMedicineContract.ReminderMedicineEntry.CONTENT_URI,remMedID),null, null);
+        Log.d("RemMedRows deleted", String.valueOf(rowsDeleted));
+        for( Object i : ignoreList){
+            if (i instanceof  Integer){
+                if (((int)i) == remFKMedID){
+                    ignoreList.remove(i);
+                    break;
+                }
+            }
+        }
+        getLoaderManager().destroyLoader(REM_MED_LOADER);
+        getLoaderManager().initLoader(REM_MED_LOADER,null, remMedLoaderCallback);
     }
 }

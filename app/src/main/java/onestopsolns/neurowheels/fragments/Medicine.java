@@ -1,13 +1,10 @@
 package onestopsolns.neurowheels.fragments;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentUris;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -15,7 +12,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,15 +22,12 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
 
 import onestopsolns.neurowheels.R;
 import onestopsolns.neurowheels.adapter.MedicineAdapter;
 import onestopsolns.neurowheels.data.AlarmReminderDbHelper;
 import onestopsolns.neurowheels.data.MedicineContract;
-import onestopsolns.neurowheels.model.MedicineModel;
+import onestopsolns.neurowheels.data.ReminderMedicineContract;
 
 
 public class Medicine extends Fragment implements MedicineAdapter.MedicineAdapterListener, LoaderManager.LoaderCallbacks<Cursor> {
@@ -183,6 +176,11 @@ public class Medicine extends Fragment implements MedicineAdapter.MedicineAdapte
             public void onClick(DialogInterface dialogInterface, int i) {
                 Uri uri = ContentUris.withAppendedId(MedicineContract.MedicineEntry.CONTENT_URI, medID);
                 int rowsDeleted = Medicine.this.getActivity().getContentResolver().delete(uri, null, null);
+
+                Uri delFKMedID = ContentUris.withAppendedId(ReminderMedicineContract.ReminderMedicineEntry.CONTENT_URI_DELETE_FK_REMID, medID);
+                int rowsFKMedIDDeleted= Medicine.this.getActivity().getContentResolver().delete(delFKMedID, null, null);
+                Log.d("deleted remID rows", String.valueOf(rowsFKMedIDDeleted));
+
                 if (rowsDeleted == 0) {
                     // If no rows were deleted, then there was an error with the delete.
                     Toast.makeText(Medicine.this.getContext(), "Delete Failed",

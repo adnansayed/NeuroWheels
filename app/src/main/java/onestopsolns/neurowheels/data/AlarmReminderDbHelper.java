@@ -35,11 +35,17 @@ public class AlarmReminderDbHelper extends SQLiteOpenHelper {
                 + MedicineContract.MedicineEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + MedicineContract.MedicineEntry.KEY_TITLE + " TEXT NOT NULL " + " );";
 
+        String SQL_CREATE_REMINDER_MEDICINE_TABLE =  "CREATE TABLE " + ReminderMedicineContract.ReminderMedicineEntry.TABLE_NAME + " ("
+                + ReminderMedicineContract.ReminderMedicineEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + ReminderMedicineContract.ReminderMedicineEntry.KEY_FK_REMINDER_ID + " INTEGER, "
+                + ReminderMedicineContract.ReminderMedicineEntry.KEY_FK_MEDICINE_ID + " INTEGER, "
+                + ReminderMedicineContract.ReminderMedicineEntry.KEY_QUANTITY + " INTEGER NOT NULL);";
+
+
         // Execute the SQL statement
         sqLiteDatabase.execSQL(SQL_CREATE_ALARM_TABLE);
         sqLiteDatabase.execSQL(SQL_CREATE_MEDICINE_TABLE);
-
-
+        sqLiteDatabase.execSQL(SQL_CREATE_REMINDER_MEDICINE_TABLE);
     }
 
     @Override
